@@ -1,0 +1,110 @@
+{# ========================================= #}
+{# templates/home/index.html.twig #}
+{# ========================================= #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Accueil - Bibliothèque{% endblock %}
+
+{% block body %}
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-3 fw-bold mb-4">
+            <i class="bi bi-book"></i> Bienvenue dans votre bibliothèque
+        </h1>
+        <p class="lead mb-4">
+            Explorez notre collection de milliers de livres et empruntez en quelques clics
+        </p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a href="{{ path('app_book_index') }}" class="btn btn-light btn-lg px-4">
+                <i class="bi bi-search"></i> Parcourir le catalogue
+            </a>
+            {% if not app.user %}
+                <a href="{{ path('app_register') }}" class="btn btn-outline-light btn-lg px-4">
+                    <i class="bi bi-person-plus"></i> S'inscrire
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="container my-5">
+    {# Statistiques #}
+    <div class="row text-center mb-5">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-book-fill fs-1 text-primary"></i>
+                    <h3 class="mt-2">{{ statistics.total_books }}</h3>
+                    <p class="text-muted">Livres disponibles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-people-fill fs-1 text-success"></i>
+                    <h3 class="mt-2">{{ statistics.total_users }}</h3>
+                    <p class="text-muted">Membres actifs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-journal-bookmark-fill fs-1 text-warning"></i>
+                    <h3 class="mt-2">{{ statistics.active_loans }}</h3>
+                    <p class="text-muted">Emprunts en cours</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <i class="bi bi-star-fill fs-1 text-danger"></i>
+                    <h3 class="mt-2">{{ statistics.categories }}</h3>
+                    <p class="text-muted">Catégories</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Livres populaires #}
+    <section class="mb-5">
+        <h2 class="mb-4"><i class="bi bi-star"></i> Livres populaires</h2>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            {% for book in popular_books %}
+                {{ include('book/_card.html.twig', {book: book}) }}
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Nouveautés #}
+    <section class="mb-5">
+        <h2 class="mb-4"><i class="bi bi-clock"></i> Nouveautés</h2>
+        <div class="row row-cols-1 row-cols-md-4 g-4">
+            {% for book in recent_books %}
+                {{ include('book/_card.html.twig', {book: book}) }}
+            {% endfor %}
+        </div>
+    </section>
+
+    {# Catégories #}
+    <section>
+        <h2 class="mb-4"><i class="bi bi-collection"></i> Explorer par catégorie</h2>
+        <div class="row">
+            {% for category in categories %}
+                <div class="col-md-3 mb-3">
+                    <a href="{{ path('app_book_by_category', {slug: category.slug}) }}"
+                       class="card text-decoration-none hover-shadow">
+                        <div class="card-body text-center">
+                            <i class="bi bi-tag fs-1 text-primary"></i>
+                            <h5 class="mt-2">{{ category.name }}</h5>
+                            <p class="text-muted small">{{ category.books|length }} livres</p>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+{% endblock %}

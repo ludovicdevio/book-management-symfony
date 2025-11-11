@@ -1,0 +1,143 @@
+/**
+ * Template Twig pour le Live Component
+ *
+ * data-model="live" : Synchronisation automatique avec le backend
+ * data-action="live#action" : Actions déclenchées sur le serveur
+ */
+?>
+<div {{ attributes }}>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <h5 class="card-title mb-4">
+                <i class="bi bi-search"></i> Recherche avancée
+            </h5>
+
+            <div class="row g-3">
+                <!-- Champ de recherche textuelle -->
+                <div class="col-md-6">
+                    <label for="search-query" class="form-label">Rechercher</label>
+                    <input
+                        type="search"
+                        id="search-query"
+                        class="form-control"
+                        placeholder="Titre, ISBN, auteur..."
+                        data-model="live"
+                        data-action="live#update"
+                        value="{{ query }}"
+                    >
+                </div>
+
+                <!-- Filtre par catégorie -->
+                <div class="col-md-3">
+                    <label for="category-filter" class="form-label">Catégorie</label>
+                    <select
+                        id="category-filter"
+                        class="form-select"
+                        data-model="live"
+                        data-action="live#update"
+                    >
+                        <option value="">Toutes</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if categoryId == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Filtre disponibilité -->
+                <div class="col-md-3">
+                    <label class="form-label d-block">&nbsp;</label>
+                    <div class="form-check">
+                        <input
+                            type="checkbox"
+                            id="available-only"
+                            class="form-check-input"
+                            data-model="live"
+                            data-action="live#update"
+                            {% if availableOnly %}checked{% endif %}
+                        >
+                        <label class="form-check-label" for="available-only">
+                            Disponibles uniquement
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Indicateur de chargement -->
+            <div data-loading="show" class="text-center my-3">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                    <span class="visually-hidden">Chargement...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Résultats de recherche -->
+    <div class="mt-4">
+        {% if hasActiveSearch %}
+            <div class="alert alert-info">
+                <strong>{{ resultCount }}</strong> résultat(s) trouvé(s)
+            </div>
+        {% endif %}
+
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for book in books %}
+                <div class="col">
+                    <div class="card h-100 shadow-sm hover-shadow">
+                        {% if book.coverImage %}
+                            <img src="{{ book.coverImage }}" class="card-img-top" alt="{{ book.title }}">
+                        {% else %}
+                            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 250px;">
+                                <i class="bi bi-book fs-1 text-muted"></i>
+                            </div>
+                        {% endif %}
+
+                        <div class="card-body">
+                            <h6 class="card-title">
+                                <a href="{{ path('app_book_show', {id: book.id}) }}" class="text-decoration-none text-dark">
+                                    {{ book.title }}
+                                </a>
+                            </h6>
+                            <p class="card-text text-muted small mb-2">
+                                {{ book.author.fullName }}
+                            </p>
+                            <p class="card-text">
+                                <span class="badge bg-secondary">{{ book.category.name }}</span>
+                            </p>
+                        </div>
+
+                        <div class="card-footer bg-transparent">
+                            {% if book.isAvailable %}
+                                <span class="badge bg-success">
+                                    <i class="bi bi-check-circle"></i> Disponible ({{ book.availableCopies }})
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="bi bi-x-circle"></i> Indisponible
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="col-12">
+                    <div class="alert alert-warning">
+                        Aucun livre trouvé pour votre recherche.
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<?php
+/**
+ * Utilisation du composant dans une vue :
+ *
+ * {% component 'book_search_live' with {
+ *     categories: categories,
+ *     limit: 20
+ * } %}
+ */
+?>

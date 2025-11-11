@@ -1,0 +1,174 @@
+{# ========================================= #}
+{# templates/loan/my_loans.html.twig #}
+{# ========================================= #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes emprunts{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <h1 class="mb-4">
+        <i class="bi bi-journal-bookmark"></i> Mes emprunts
+    </h1>
+
+    {# Statistiques personnelles #}
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Emprunts actifs</h5>
+                    <p class="display-4">{{ active_loans|length }}</p>
+                    <small>/ {{ user.maxLoans }} maximum</small>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success">
+                <div class="card-body">
+                    <h5 class="card-title">Emprunts disponibles</h5>
+                    <p class="display-4">{{ user.maxLoans - active_loans|length }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-info">
+                <div class="card-body">
+                    <h5 class="card-title">Total emprunts</h5>
+                    <p class="display-4">{{ loan_history|length }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Emprunts actifs #}
+    <section class="mb-5">
+        <h2 class="mb-3">Emprunts en cours</h2>
+
+        {% if active_loans|length > 0 %}
+            <div class="row row-cols-1 row-cols-md-2 g-4">
+                {% for loan in active_loans %}
+                    <div class="col">
+                        <div class="card {% if loan.isOverdue %}border-danger{% endif %}">
+                            <div class="card-body">
+                                <div class="d-flex">
+                                    {% if loan.book.coverImage %}
+                                        <img src="{{ loan.book.coverImage }}" alt="{{ loan.book.title }}"
+                                             class="img-thumbnail me-3" style="width: 100px; height: 140px; object-fit: cover;">
+                                    {% else %}
+                                        <div class="bg-light me-3 d-flex align-items-center justify-content-center"
+                                             style="width: 100px; height: 140px;">
+                                            <i class="bi bi-book fs-3 text-muted"></i>
+                                        </div>
+                                    {% endif %}
+
+                                    <div class="flex-grow-1">
+                                        <h5 class="card-title">
+                                            <a href="{{ path('app_book_show', {id: loan.book.id}) }}" class="text-decoration-none">
+                                                {{ loan.book.title }}
+                                            </a>
+                                        </h5>
+                                        <p class="text-muted mb-2">{{ loan.book.author.fullName }}</p>
+
+                                        <p class="mb-1">
+                                            <small><i class="bi bi-calendar-check"></i> Emprunté le {{ loan.borrowedAt|date('d/m/Y') }}</small>
+                                        </p>
+                                        <p class="mb-2">
+                                            <small class="{% if loan.isOverdue %}text-danger fw-bold{% endif %}">
+                                                <i class="bi bi-calendar-event"></i>
+                                                {% if loan.isOverdue %}
+                                                    En retard de {{ loan.overdueDays }} jour(s) !
+                                                {% else %}
+                                                    À retourner le {{ loan.dueDate|date('d/m/Y') }}
+                                                {% endif %}
+                                            </small>
+                                        </p>
+
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            {# Bouton Retourner - Utilisation du Voter #}
+                                            {% if is_granted('RETURN', loan) %}
+                                                <form method="post" action="{{ path('app_loan_return', {id: loan.id}) }}" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('return' ~ loan.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-success"
+                                                            onclick="return confirm('Confirmer le retour ?')">
+                                                        <i class="bi bi-check-circle"></i> Retourner
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+
+                                            {# Bouton Prolonger #}
+                                            {% if is_granted('EXTEND', loan) %}
+                                                <form method="post" action="{{ path('app_loan_extend', {id: loan.id}) }}" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('extend' ~ loan.id) }}">
+                                                    <button type="submit" class="btn btn-sm btn-warning"
+                                                            onclick="return confirm('Prolonger de 14 jours ?')">
+                                                        <i class="bi bi-arrow-clockwise"></i> Prolonger
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> Vous n'avez aucun emprunt en cours.
+                <a href="{{ path('app_book_index') }}" class="alert-link">Parcourir le catalogue</a>
+            </div>
+        {% endif %}
+    </section>
+
+    {# Historique #}
+    <section>
+        <h2 class="mb-3">Historique des emprunts</h2>
+
+        {% if loan_history|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Livre</th>
+                            <th>Emprunté le</th>
+                            <th>Date de retour prévue</th>
+                            <th>Retourné le</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for loan in loan_history %}
+                            <tr>
+                                <td>
+                                    <a href="{{ path('app_book_show', {id: loan.book.id}) }}">
+                                        {{ loan.book.title }}
+                                    </a>
+                                </td>
+                                <td>{{ loan.borrowedAt|date('d/m/Y') }}</td>
+                                <td>{{ loan.dueDate|date('d/m/Y') }}</td>
+                                <td>
+                                    {% if loan.returnedAt %}
+                                        {{ loan.returnedAt|date('d/m/Y') }}
+                                    {% else %}
+                                        <span class="text-muted">En cours</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if loan.status == constant('App\\Entity\\Loan::STATUS_RETURNED') %}
+                                        <span class="badge bg-success">Retourné</span>
+                                    {% elseif loan.status == constant('App\\Entity\\Loan::STATUS_OVERDUE') %}
+                                        <span class="badge bg-danger">En retard</span>
+                                    {% else %}
+                                        <span class="badge bg-info">Actif</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock %}

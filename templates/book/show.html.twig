@@ -1,0 +1,121 @@
+{# ========================================= #}
+{# templates/book/show.html.twig #}
+{# ========================================= #}
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ book.title }} - Bibliothèque{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ path('app_book_index') }}">Accueil</a></li>
+            <li class="breadcrumb-item"><a href="{{ path('app_book_index') }}">Livres</a></li>
+            <li class="breadcrumb-item active">{{ book.title }}</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        {# Image du livre #}
+        <div class="col-md-4">
+            {% if book.coverImage %}
+                <img src="{{ book.coverImage }}" class="img-fluid rounded shadow" alt="{{ book.title }}">
+            {% else %}
+                <div class="bg-light rounded shadow d-flex align-items-center justify-content-center" style="height: 500px;">
+                    <i class="bi bi-book fs-1 text-muted"></i>
+                </div>
+            {% endif %}
+        </div>
+
+        {# Informations du livre #}
+        <div class="col-md-8">
+            <h1 class="display-4">{{ book.title }}</h1>
+
+            <div class="mb-3">
+                <h5 class="text-muted">
+                    <i class="bi bi-person"></i>
+                    <a href="{{ path('app_book_index', {author: book.author.id}) }}" class="text-decoration-none">
+                        {{ book.author.fullName }}
+                    </a>
+                </h5>
+            </div>
+
+            <div class="mb-3">
+                <span class="badge bg-secondary fs-6">{{ book.category.name }}</span>
+                <span class="badge bg-info fs-6">{{ book.publishedYear }}</span>
+                <span class="badge bg-dark fs-6">ISBN: {{ book.isbn }}</span>
+            </div>
+
+            {# Statut de disponibilité #}
+            <div class="alert {% if book.isAvailable %}alert-success{% else %}alert-danger{% endif %} d-flex align-items-center">
+                <i class="bi {% if book.isAvailable %}bi-check-circle-fill{% else %}bi-x-circle-fill{% endif %} fs-4 me-2"></i>
+                <div>
+                    {% if book.isAvailable %}
+                        <strong>Disponible</strong> - {{ book.availableCopies }} exemplaire(s) disponible(s) sur {{ book.totalCopies }}
+                    {% else %}
+                        <strong>Indisponible</strong> - Tous les exemplaires sont empruntés
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Description #}
+            <div class="mb-4">
+                <h4>Description</h4>
+                <p class="lead">{{ book.description ?? 'Aucune description disponible.' }}</p>
+            </div>
+
+            {# Actions #}
+            <div class="d-grid gap-2 d-md-flex">
+                {% if app.user %}
+                    {# Utilisation du Voter pour vérifier les permissions #}
+                    {% if is_granted('BORROW', book) %}
+                        <form method="post" action="{{ path('app_loan_borrow', {id: book.id}) }}" class="d-inline">
+                            <input type="hidden" name="_token" value="{{ csrf_token('borrow' ~ book.id) }}">
+                            <button type="submit" class="btn btn-lg btn-primary" onclick="return confirm('Confirmer l\'emprunt ?')">
+                                <i class="bi bi-journal-plus"></i> Emprunter ce livre
+                            </button>
+                        </form>
+                    {% elseif not book.isAvailable %}
+                        <button class="btn btn-lg btn-secondary" disabled>
+                            <i class="bi bi-x-circle"></i> Livre indisponible
+                        </button>
+                    {% elseif not app.user.canBorrow %}
+                        <button class="btn btn-lg btn-secondary" disabled title="Limite d'emprunts atteinte">
+                            <i class="bi bi-exclamation-circle"></i> Limite atteinte
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <a href="{{ path('app_login') }}" class="btn btn-lg btn-primary">
+                        <i class="bi bi-box-arrow-in-right"></i> Connectez-vous pour emprunter
+                    </a>
+                {% endif %}
+
+                {# Actions admin #}
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_book_edit', {id: book.id}) }}" class="btn btn-lg btn-warning">
+                        <i class="bi bi-pencil"></i> Modifier
+                    </a>
+                    <form method="post" action="{{ path('app_book_delete', {id: book.id}) }}" class="d-inline">
+                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ book.id) }}">
+                        <button type="submit" class="btn btn-lg btn-danger" onclick="return confirm('Confirmer la suppression ?')">
+                            <i class="bi bi-trash"></i> Supprimer
+                        </button>
+                    </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# Livres similaires #}
+    {% if similar_books is defined and similar_books|length > 0 %}
+        <section class="mt-5">
+            <h3><i class="bi bi-collection"></i> Livres similaires</h3>
+            <div class="row row-cols-1 row-cols-md-4 g-4 mt-2">
+                {% for similar_book in similar_books %}
+                    {{ include('book/_card.html.twig', {book: similar_book}) }}
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+</div>
+{% endblock %}

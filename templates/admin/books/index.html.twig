@@ -1,0 +1,28 @@
+// ===== Template Twig pour DataTable =====
+/**
+ * templates/admin/books/index.html.twig
+ */
+?>
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des livres{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="bi bi-book"></i> Gestion des livres
+        </h1>
+        <a href="{{ path('app_book_new') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Nouveau livre
+        </a>
+    </div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            {# Rendu du DataTable #}
+            {{ render_datatable(datatable) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
