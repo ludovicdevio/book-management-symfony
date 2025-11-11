@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace App\Form;
 
+use App\Controller\AuthorAutocompleteController;
+use App\Controller\CategoryAutocompleteController;
 use App\Entity\Author;
 use App\Entity\Book;
 use App\Entity\Category;
-use App\Form\Type\AuthorAutocompleteType;
-use App\Form\Type\CategoryAutocompleteType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
@@ -18,6 +18,8 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\Image;
+use Symfony\UX\Autocomplete\Form\AsEntityAutocompleteField;
+use Symfony\UX\Autocomplete\Form\BaseEntityAutocompleteType;
 
 /**
  * Formulaire de livre
@@ -25,7 +27,7 @@ use Symfony\Component\Validator\Constraints\Image;
  * Design Pattern : Form Builder
  * Construction fluide du formulaire
  *
- * Symfony UX Autocomplete pour les champs Author et Category
+ * Utilise Symfony UX Autocomplete pour les relations Author et Category
  */
 class BookType extends AbstractType
 {
@@ -79,19 +81,37 @@ class BookType extends AbstractType
                 'help' => 'Nombre d\'exemplaires disponibles dans la bibliothèque',
             ])
 
-            // Champ auteur avec autocomplétion
-            ->add('author', AuthorAutocompleteType::class, [
-                'label' => 'Auteur',
+            ->add('availableCopies', IntegerType::class, [
+                'label' => 'Copies disponibles',
                 'attr' => [
                     'class' => 'form-control',
+                    'readonly' => true,
+                ],
+                'help' => 'Mis à jour automatiquement',
+                'disabled' => true,
+            ])
+
+            // Champ auteur avec autocomplétion
+            ->add('author', BaseEntityAutocompleteType::class, [
+                'class' => Author::class,
+                'autocomplete_url' => 'author',
+                'label' => 'Auteur',
+                'placeholder' => 'Rechercher un auteur...',
+                'tom_select_options' => [
+                    'create' => false,
+                    'maxItems' => 1,
                 ],
             ])
 
             // Champ catégorie avec autocomplétion
-            ->add('category', CategoryAutocompleteType::class, [
+            ->add('category', BaseEntityAutocompleteType::class, [
+                'class' => Category::class,
+                'autocomplete_url' => 'category',
                 'label' => 'Catégorie',
-                'attr' => [
-                    'class' => 'form-control',
+                'placeholder' => 'Rechercher une catégorie...',
+                'tom_select_options' => [
+                    'create' => false,
+                    'maxItems' => 1,
                 ],
             ])
 

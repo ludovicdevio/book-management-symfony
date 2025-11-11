@@ -16,5 +16,14 @@ services:
     App\:
         resource: '../src/'
 
+    # Configuration des contrôleurs d'autocomplétion Symfony UX
+    App\Controller\AuthorAutocompleteController:
+        tags:
+            - { name: 'ux.entity_autocompleter', alias: 'author' }
+
+    App\Controller\CategoryAutocompleteController:
+        tags:
+            - { name: 'ux.entity_autocompleter', alias: 'category' }
+
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

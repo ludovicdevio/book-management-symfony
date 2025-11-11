@@ -11,6 +11,7 @@ use App\Repository\BookRepository;
 use App\Repository\CategoryRepository;
 use App\Repository\AuthorRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -37,7 +38,8 @@ class BookController extends AbstractController
         private BookRepository $bookRepository,
         private CategoryRepository $categoryRepository,
         private AuthorRepository $authorRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private PaginatorInterface $paginator
     ) {}
 
     /**
@@ -59,24 +61,31 @@ class BookController extends AbstractController
         $authorId = $request->query->get('author');
         $availableOnly = $request->query->getBoolean('available');
 
-        // Appel au repository avec les filtres
+        // Appel au repository avec QueryBuilder pour la pagination
         if ($searchForm->isSubmitted() && $searchForm->isValid()) {
             $data = $searchForm->getData();
-            $books = $this->bookRepository->searchBooks(
+            $queryBuilder = $this->bookRepository->createSearchQueryBuilder(
                 $data['query'] ?? null,
                 $data['category']?->getId(),
                 $data['author']?->getId(),
                 $data['availableOnly'] ?? false
             );
         } else {
-            $books = $this->bookRepository->searchBooks($query, $categoryId, $authorId, $availableOnly);
+            $queryBuilder = $this->bookRepository->createSearchQueryBuilder($query, $categoryId, $authorId, $availableOnly);
         }
+
+        // Pagination avec KnpPaginator
+        $pagination = $this->paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            12 // Nombre d'éléments par page
+        );
 
         // Récupération des statistiques
         $statistics = $this->bookRepository->getStatistics();
 
         return $this->render('book/index.html.twig', [
-            'books' => $books,
+            'books' => $pagination,
             'search_form' => $searchForm,
             'statistics' => $statistics,
         ]);

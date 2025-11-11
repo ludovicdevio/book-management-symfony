@@ -61,6 +61,9 @@
             "migrations/.gitignore"
         ]
     },
+    "knplabs/knp-paginator-bundle": {
+        "version": "v6.9.1"
+    },
     "kreyu/data-table-bundle": {
         "version": "v0.32.2"
     },

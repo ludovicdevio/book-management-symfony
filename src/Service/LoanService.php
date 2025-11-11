@@ -240,10 +240,17 @@ class LoanService
      */
     public function getStatistics(): array
     {
+        $totalLoans = $this->loanRepository->count([]);
+        $activeLoans = $this->loanRepository->countActiveLoans();
+        $overdueLoans = $this->loanRepository->countOverdueLoans();
+        $returnedLoans = $this->loanRepository->count(['status' => Loan::STATUS_RETURNED]);
+
         return [
-            'active_loans' => $this->loanRepository->countActiveLoans(),
-            'overdue_loans' => $this->loanRepository->countOverdueLoans(),
-            'total_loans_this_month' => $this->loanRepository->countLoansThisMonth(),
+            'active' => $activeLoans,
+            'overdue' => $overdueLoans,
+            'returned' => $returnedLoans,
+            'this_month' => $this->loanRepository->countLoansThisMonth(),
+            'total' => $totalLoans,
         ];
     }
 
@@ -278,11 +285,4 @@ class LoanService
 
         return $count;
     }
-}
-
-// ===== Exception personnalisée =====
-namespace App\Exception;
-
-class LoanException extends \RuntimeException
-{
 }

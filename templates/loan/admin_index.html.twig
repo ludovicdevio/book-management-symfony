@@ -1,0 +1,150 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tous les emprunts{% endblock %}
+
+{% block body %}
+<div class="container-fluid my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="bi bi-calendar-check"></i> Gestion des emprunts
+        </h1>
+        <a href="{{ path('app_admin_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Retour au dashboard
+        </a>
+    </div>
+
+    {# Statistiques #}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6>Emprunts actifs</h6>
+                    <h3>{{ statistics.active }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6>Emprunts retournés</h6>
+                    <h3>{{ statistics.returned }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h6>En retard</h6>
+                    <h3>{{ statistics.overdue }}</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6>Ce mois</h6>
+                    <h3>{{ statistics.this_month }}</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Filtres #}
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="btn-group" role="group">
+                <a href="{{ path('app_loan_admin_index') }}"
+                   class="btn {{ current_status is null ? 'btn-primary' : 'btn-outline-primary' }}">
+                    Tous
+                </a>
+                <a href="{{ path('app_loan_admin_index', {'status': 'active'}) }}"
+                   class="btn {{ current_status == 'active' ? 'btn-primary' : 'btn-outline-primary' }}">
+                    Actifs
+                </a>
+                <a href="{{ path('app_loan_admin_index', {'status': 'returned'}) }}"
+                   class="btn {{ current_status == 'returned' ? 'btn-primary' : 'btn-outline-primary' }}">
+                    Retournés
+                </a>
+                <a href="{{ path('app_loan_admin_index', {'status': 'overdue'}) }}"
+                   class="btn {{ current_status == 'overdue' ? 'btn-primary' : 'btn-outline-primary' }}">
+                    En retard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {# Tableau des emprunts #}
+    <div class="card shadow">
+        <div class="card-body">
+            {% if loans is empty %}
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> Aucun emprunt trouvé.
+                </div>
+            {% else %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Utilisateur</th>
+                                <th>Livre</th>
+                                <th>Date d'emprunt</th>
+                                <th>Date de retour prévue</th>
+                                <th>Retourné le</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan in loans %}
+                                <tr class="{{ loan.status == 'overdue' ? 'table-danger' : '' }}">
+                                    <td>{{ loan.id }}</td>
+                                    <td>
+                                        <strong>{{ loan.user.firstName }} {{ loan.user.lastName }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ loan.user.email }}</small>
+                                    </td>
+                                    <td>
+                                        <a href="{{ path('app_book_show', {'id': loan.book.id}) }}">
+                                            {{ loan.book.title }}
+                                        </a>
+                                    </td>
+                                    <td>{{ loan.borrowedAt|date('d/m/Y') }}</td>
+                                    <td>{{ loan.dueDate|date('d/m/Y') }}</td>
+                                    <td>
+                                        {% if loan.returnedAt %}
+                                            {{ loan.returnedAt|date('d/m/Y') }}
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if loan.status == 'active' %}
+                                            <span class="badge bg-info">Actif</span>
+                                        {% elseif loan.status == 'returned' %}
+                                            <span class="badge bg-success">Retourné</span>
+                                        {% elseif loan.status == 'overdue' %}
+                                            <span class="badge bg-danger">En retard</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if loan.status != 'returned' %}
+                                            <form method="post" action="{{ path('app_loan_return', {'id': loan.id}) }}" style="display: inline;">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('return' ~ loan.id) }}">
+                                                <button type="submit" class="btn btn-sm btn-success"
+                                                        onclick="return confirm('Confirmer le retour de ce livre?')">
+                                                    <i class="bi bi-check"></i> Retourner
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

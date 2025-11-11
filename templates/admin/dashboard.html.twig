@@ -1,0 +1,174 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Tableau de bord Admin{% endblock %}
+
+{% block body %}
+<div class="container-fluid my-4">
+    <h1 class="mb-4">
+        <i class="bi bi-speedometer2"></i> Tableau de bord administrateur
+    </h1>
+
+    {# Statistiques globales #}
+    <div class="row mb-4">
+        {# Livres #}
+        <div class="col-md-3">
+            <div class="card text-white bg-primary shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">Livres</h6>
+                            <h2 class="mb-0">{{ stats.books.total }}</h2>
+                            <small>{{ stats.books.available }} disponibles</small>
+                        </div>
+                        <div>
+                            <i class="bi bi-book-fill fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-primary-dark">
+                    <small>Taux de disponibilité: {{ stats.books.availability_rate }}%</small>
+                </div>
+            </div>
+        </div>
+
+        {# Utilisateurs #}
+        <div class="col-md-3">
+            <div class="card text-white bg-success shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">Utilisateurs</h6>
+                            <h2 class="mb-0">{{ stats.users.total }}</h2>
+                            <small>{{ stats.users.active }} actifs</small>
+                        </div>
+                        <div>
+                            <i class="bi bi-people-fill fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-success-dark">
+                    <small>{{ stats.users.inactive }} inactifs</small>
+                </div>
+            </div>
+        </div>
+
+        {# Emprunts actifs #}
+        <div class="col-md-3">
+            <div class="card text-white bg-warning shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">Emprunts</h6>
+                            <h2 class="mb-0">{{ stats.loans.active }}</h2>
+                            <small>{{ stats.loans.overdue }} en retard</small>
+                        </div>
+                        <div>
+                            <i class="bi bi-calendar-check-fill fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-warning-dark">
+                    <small>Ce mois: {{ stats.loans.this_month }}</small>
+                </div>
+            </div>
+        </div>
+
+        {# Taux de retard #}
+        <div class="col-md-3">
+            <div class="card text-white bg-danger shadow">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title text-uppercase mb-0">Retards</h6>
+                            <h2 class="mb-0">{{ stats.loans.overdue_rate }}%</h2>
+                            <small>Taux de retard</small>
+                        </div>
+                        <div>
+                            <i class="bi bi-exclamation-triangle-fill fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-danger-dark">
+                    <a href="{{ path('app_loan_admin_overdue') }}" class="text-white text-decoration-none">
+                        Voir les retards <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Actions rapides #}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Actions rapides</h5>
+                </div>
+                <div class="card-body">
+                    <div class="btn-group" role="group">
+                        <a href="{{ path('app_book_new') }}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Ajouter un livre
+                        </a>
+                        <a href="{{ path('app_book_index') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-list"></i> Gérer les livres
+                        </a>
+                        <a href="{{ path('app_loan_admin_index') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-calendar"></i> Gérer les emprunts
+                        </a>
+                        <a href="{{ path('app_loan_admin_overdue') }}" class="btn btn-outline-danger">
+                            <i class="bi bi-exclamation-triangle"></i> Emprunts en retard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Graphiques et statistiques détaillées #}
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Emprunts par mois</h5>
+                </div>
+                <div class="card-body">
+                    {% if chartData.loansPerMonth.labels is empty %}
+                        <p class="text-muted">Aucune donnée disponible</p>
+                    {% else %}
+                        <ul class="list-group">
+                            {% for i in 0..chartData.loansPerMonth.labels|length - 1 %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ chartData.loansPerMonth.labels[i] }}
+                                    <span class="badge bg-primary rounded-pill">{{ chartData.loansPerMonth.data[i] }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Catégories populaires</h5>
+                </div>
+                <div class="card-body">
+                    {% if chartData.popularCategories.labels is empty %}
+                        <p class="text-muted">Aucune donnée disponible</p>
+                    {% else %}
+                        <ul class="list-group">
+                            {% for i in 0..chartData.popularCategories.labels|length - 1 %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{ chartData.popularCategories.labels[i] }}
+                                    <span class="badge bg-success rounded-pill">{{ chartData.popularCategories.data[i] }}</span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

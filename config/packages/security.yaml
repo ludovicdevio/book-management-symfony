@@ -2,6 +2,11 @@ security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
         Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # Hiérarchie des rôles - ROLE_ADMIN hérite des droits ROLE_USER
+    role_hierarchy:
+        ROLE_ADMIN: ROLE_USER
+
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         app_user_provider:

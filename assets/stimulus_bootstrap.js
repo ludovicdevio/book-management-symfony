@@ -1,5 +1,7 @@
 import { startStimulusApp } from '@symfony/stimulus-bundle';
 
 const app = startStimulusApp();
-// register any custom, 3rd party controllers here
-// app.register('some_controller_name', SomeImportedController);
+
+// Enregistrer le contrôleur Autocomplete de Symfony UX
+import Autocomplete from '@symfony/ux-autocomplete/autocomplete_controller';
+app.register('autocomplete', Autocomplete);

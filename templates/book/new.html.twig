@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un nouveau livre{% endblock %}
+
+{% block body %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="bi bi-plus-circle"></i> Ajouter un nouveau livre
+                    </h3>
+                </div>
+                <div class="card-body">
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            {{ form_row(form.title, {
+                                'label': 'Titre du livre',
+                                'attr': {'class': 'form-control', 'placeholder': 'Entrez le titre du livre'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.isbn, {
+                                'label': 'ISBN',
+                                'attr': {'class': 'form-control', 'placeholder': '978-XXXXXXXXXX'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.publishedYear, {
+                                'label': 'Année de publication',
+                                'attr': {'class': 'form-control'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.author, {
+                                'label': 'Auteur',
+                                'attr': {'class': 'form-select'}
+                            }) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.category, {
+                                'label': 'Catégorie',
+                                'attr': {'class': 'form-select'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.totalCopies, {
+                                'label': 'Nombre de copies',
+                                'attr': {'class': 'form-control', 'min': 0}
+                            }) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            {{ form_row(form.coverImage, {
+                                'label': 'URL de la couverture',
+                                'attr': {'class': 'form-control', 'placeholder': 'https://...'}
+                            }) }}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.description, {
+                            'label': 'Description',
+                            'attr': {'class': 'form-control', 'rows': 5, 'placeholder': 'Décrivez le livre...'}
+                        }) }}
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ path('app_book_index') }}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Annuler
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Enregistrer
+                        </button>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
