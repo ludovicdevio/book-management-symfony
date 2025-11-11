@@ -94,24 +94,28 @@ class BookType extends AbstractType
             // Champ auteur avec autocomplétion
             ->add('author', BaseEntityAutocompleteType::class, [
                 'class' => Author::class,
-                'autocomplete_url' => 'author',
+                'autocomplete_url' => '/autocomplete/author',
                 'label' => 'Auteur',
                 'placeholder' => 'Rechercher un auteur...',
+                'choice_label' => 'fullName',
                 'tom_select_options' => [
                     'create' => false,
                     'maxItems' => 1,
+                    'preload' => 'focus',
                 ],
             ])
 
             // Champ catégorie avec autocomplétion
             ->add('category', BaseEntityAutocompleteType::class, [
                 'class' => Category::class,
-                'autocomplete_url' => 'category',
+                'autocomplete_url' => '/autocomplete/category',
                 'label' => 'Catégorie',
                 'placeholder' => 'Rechercher une catégorie...',
+                'choice_label' => 'name',
                 'tom_select_options' => [
                     'create' => false,
                     'maxItems' => 1,
+                    'preload' => 'focus',
                 ],
             ])
 
